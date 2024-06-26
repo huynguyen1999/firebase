@@ -8,8 +8,9 @@ import {
 import { ORDER_STATUS } from '../../../constants';
 import { NumberRangeDto } from '../../../dtos/number-range.dto';
 import { Transform, Type, plainToClass } from 'class-transformer';
+import { PaginationDto } from '../../../dtos';
 
-export class GetOrdersDto {
+export class GetOrdersDto extends PaginationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()

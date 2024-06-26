@@ -6,8 +6,9 @@ import {
 } from 'class-validator';
 import { NumberRangeDto } from '../../../dtos/number-range.dto';
 import { Transform, Type, plainToClass } from 'class-transformer';
+import { PaginationDto } from '../../../dtos';
 
-export class GetProductsDto {
+export class GetProductsDto extends PaginationDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()

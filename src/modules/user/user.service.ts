@@ -36,6 +36,23 @@ export class UserService {
     }));
   }
 
+  async getUser(id: string) {
+    const userSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(id)
+      .get();
+
+    if (!userSnapshot.exists) {
+      throw new Error('User not found');
+    }
+
+    return {
+      ...userSnapshot.data(),
+      password: undefined,
+    };
+  }
+
   async getUserByEmail(email: string) {
     const querySnapshot = await this.firebaseService
       .getFirestore()
@@ -67,12 +84,41 @@ export class UserService {
       .add(data);
   }
 
-  async updateUser(data: User) {
+  async updateUser(data: Partial<User>) {
     const { id, ...restData } = data;
+
+    const userSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(id)
+      .get();
+
+    if (!userSnapshot.exists) {
+      throw new Error('User not found');
+    }
+
     return this.firebaseService
       .getFirestore()
       .collection(COLLECTIONS.USERS)
       .doc(id)
       .update(restData);
+  }
+
+  async deleteUser(id: string) {
+    const userSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(id)
+      .get();
+
+    if (!userSnapshot.exists) {
+      throw new Error('User not found');
+    }
+
+    return await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(id)
+      .delete();
   }
 }

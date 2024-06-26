@@ -1,14 +1,13 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { PaginationDto } from '../../../dtos';
 
-export class GetCustomersDto extends PaginationDto {
-  @IsString()
+export class UpdateProfileDto {
   @IsOptional()
+  @IsString()
   @IsNotEmpty()
   phone_number?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   @IsNotEmpty()
   name?: string;
 }

@@ -89,4 +89,8 @@ export class AuthService {
         .update({ status: STATUS.BLOCKED });
     }
   }
+
+  async getProfile(user: Partial<User>) {
+    return this.userService.getUser(user.id);
+  }
 }

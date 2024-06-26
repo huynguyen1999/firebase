@@ -1,7 +1,8 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { USER_ROLES } from '../../../constants';
+import { PaginationDto } from '../../../dtos';
 
-export class GetUsersDto {
+export class GetUsersDto extends PaginationDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()

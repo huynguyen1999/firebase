@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Put,
   Req,
@@ -75,6 +76,24 @@ export class AuthController {
       const token = extractTokenFromHeader(req.headers.authorization);
       await this.authService.logout(token);
       res.status(200).json({ success: true }).end();
+    } catch (exception) {
+      console.log(exception);
+      res
+        .status(400)
+        .json({ message: exception.message ?? 'Unknown error' })
+        .end();
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async profile(
+    @Req() req: Request & { user: Partial<User> },
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.authService.getProfile(req.user);
+      res.status(200).json({ data, success: true }).end();
     } catch (exception) {
       console.log(exception);
       res

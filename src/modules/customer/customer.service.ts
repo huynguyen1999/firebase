@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FirebaseService } from '../../lib/firebase/firebase.service';
 import { GetCustomersDto } from './dtos';
 import { COLLECTIONS } from '../../constants';
+import { Customer } from '../../interfaces';
 
 @Injectable()
 export class CustomerService {
@@ -27,5 +28,62 @@ export class CustomerService {
       ...doc.data(),
       id: doc.id,
     }));
+  }
+
+  async getCustomer(id: string) {
+    const customerSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .doc(id)
+      .get();
+
+    if (!customerSnapshot.exists) {
+      throw new Error('Customer not found');
+    }
+
+    return customerSnapshot.data();
+  }
+
+  async createCustomer(data: Customer) {
+    return await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .add(data);
+  }
+
+  async updateCustomer(id: string, data: Partial<Customer>) {
+    const customerSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .doc(id)
+      .get();
+
+    if (!customerSnapshot.exists) {
+      throw new Error('Customer not found');
+    }
+
+    return await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .doc(id)
+      .update(data);
+  }
+
+  async deleteCustomer(id: string) {
+    const customerSnapshot = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .doc(id)
+      .get();
+
+    if (!customerSnapshot.exists) {
+      throw new Error('Customer not found');
+    }
+
+    return await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.CUSTOMERS)
+      .doc(id)
+      .delete();
   }
 }
