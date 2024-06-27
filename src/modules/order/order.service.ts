@@ -81,12 +81,55 @@ export class OrderService {
     // }
 
     const querySnapshot = await orderCollection.get();
-    return querySnapshot.docs
-      .map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }))
-      .sort((a, b) => b.order_date - a.order_date);
+
+    if (querySnapshot.empty) {
+      return [];
+    }
+
+    const joinedData = [];
+
+    const promises = [];
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+
+      const productRef = this.firebaseService
+        .getFirestore()
+        .collection(COLLECTIONS.PRODUCTS)
+        .doc(data.product_id);
+      const customerRef = this.firebaseService
+        .getFirestore()
+        .collection(COLLECTIONS.CUSTOMERS)
+        .doc(data.customer_id);
+      const userRef = this.firebaseService
+        .getFirestore()
+        .collection(COLLECTIONS.USERS)
+        .doc(data.employee_id);
+      promises.push(
+        productRef.get().then((snapshot) => {
+          data['product'] = snapshot?.data() ?? null;
+        }),
+      );
+      promises.push(
+        customerRef.get().then((snapshot) => {
+          data['customer'] = snapshot?.data() ?? null;
+        }),
+      );
+      promises.push(
+        userRef.get().then((snapshot) => {
+          const employeeData = {
+            ...snapshot?.data(),
+            password: undefined,
+          };
+          data['employee'] = snapshot?.exists ? employeeData : null;
+        }),
+      );
+
+      joinedData.push(data);
+    }
+
+    await Promise.all(promises);
+
+    return joinedData.sort((a, b) => b.order_date - a.order_date);
   }
 
   async getOrder(id: string) {
