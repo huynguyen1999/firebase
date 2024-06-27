@@ -9,7 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ChangePasswordDto, LoginDto, RegisterDto } from './dtos';
+import {
+  ChangePasswordDto,
+  GoogleLoginDto,
+  LoginDto,
+  RegisterDto,
+} from './dtos';
 import { AuthService } from './auth.service';
 import { User } from '../../interfaces/user.interface';
 import { JwtAuthGuard } from './guards';
@@ -37,6 +42,20 @@ export class AuthController {
   async login(@Body() body: LoginDto, @Res() res: Response) {
     try {
       const data = await this.authService.login(body);
+      res.status(200).json({ data, success: true }).end();
+    } catch (exception) {
+      console.log(exception);
+      res
+        .status(400)
+        .json({ message: exception.message ?? 'Unknown error' })
+        .end();
+    }
+  }
+
+  @Post('google-login')
+  async googleLogin(@Body() body: GoogleLoginDto, @Res() res: Response) {
+    try {
+      const data = await this.authService.googleLogin(body);
       res.status(200).json({ data, success: true }).end();
     } catch (exception) {
       console.log(exception);

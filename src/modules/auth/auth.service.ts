@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { LoginDto, ChangePasswordDto, RegisterDto } from './dtos';
+import {
+  LoginDto,
+  ChangePasswordDto,
+  RegisterDto,
+  GoogleLoginDto,
+} from './dtos';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../../interfaces';
@@ -39,7 +44,6 @@ export class AuthService {
     const user = await this.validateUser(data);
     const payload: UserPayload = {
       email: user.email,
-      role: user.role,
     };
     const accessToken = this.jwtService.sign(payload);
     await this.firebaseService
@@ -50,6 +54,51 @@ export class AuthService {
         email: user.email,
         status: STATUS.ACTIVE,
       });
+    return { token: accessToken };
+  }
+
+  async googleLogin(data: GoogleLoginDto) {
+    // Verify ID Token from GoogleAuthProvider login
+    const googleUser = await this.firebaseService
+      .getAuth()
+      .verifyIdToken(data.id_token);
+
+    if (!googleUser?.uid) {
+      throw new Error('User not found');
+    }
+    // Verify if the user has existed in firebase authentication service
+    const existedUser = await this.firebaseService
+      .getAuth()
+      .getUser(googleUser.uid);
+
+    if (!existedUser) {
+      throw new Error('User not found');
+    }
+
+    // Verify if the user has existed in our database
+    const dbUser = await this.firebaseService
+      .getFirestore()
+      .collection(COLLECTIONS.USERS)
+      .where('google_uid', '==', existedUser.uid)
+      .where('email', '==', existedUser.email)
+      .get();
+
+    // If user not found in our database, create new user
+    if (dbUser.empty) {
+      // Create new user
+      await this.userService.createUser({
+        email: existedUser.email,
+        name: existedUser.displayName,
+        google_uid: existedUser.uid,
+        role: USER_ROLES.EMPLOYEE,
+      } as User);
+    }
+
+    // Create access token
+    const payload: UserPayload = {
+      email: existedUser.email,
+    };
+    const accessToken = this.jwtService.sign(payload);
     return { token: accessToken };
   }
 
