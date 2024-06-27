@@ -90,7 +90,7 @@ export class OrderService {
 
     const promises = [];
     for (const doc of querySnapshot.docs) {
-      const data = doc.data();
+      const data = { ...doc.data(), id: doc.id };
 
       const productRef = this.firebaseService
         .getFirestore()
